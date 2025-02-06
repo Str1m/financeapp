@@ -1,2 +1,2 @@
 # financeapp
-Microseervice Golang financeapp 
+Microservice Golang financeapp 

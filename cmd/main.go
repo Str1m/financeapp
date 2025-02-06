@@ -12,7 +12,7 @@ import (
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatalf("Error loading .env file: %v", err)
 	}
 
 	db, err := db2.NewDB()
@@ -26,6 +26,11 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	r.Post("/users", userService.CreateUser)
+	r.Route("/users", func(r chi.Router) {
+		r.Post("/", userService.CreateUser)
+		r.Get("/{id}", userService.GetUser)
+		r.Patch("/{id}", userService.UpdateUser)
+	})
+
 	http.ListenAndServe(":8080", r)
 }
