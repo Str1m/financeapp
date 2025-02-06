@@ -26,6 +26,16 @@ func getHash(pswd string) string {
 	return bs
 }
 
+func getID(r *http.Request) (int, error) {
+	idStr := chi.URLParam(r, "id")
+	idStr = strings.TrimSpace(idStr)
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
+}
+
 func (s *Service) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -55,9 +65,7 @@ func (s *Service) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) GetUser(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	idStr = strings.TrimSpace(idStr)
-	id, err := strconv.Atoi(idStr)
+	id, err := getID(r)
 	if err != nil {
 		log.Printf("Invalid user id: %v", err)
 		http.Error(w, "Invalid user id", http.StatusBadRequest)
@@ -75,8 +83,7 @@ func (s *Service) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(strings.TrimSpace(idStr))
+	id, err := getID(r)
 	if err != nil {
 		log.Printf("Invalid user id: %v", err)
 		http.Error(w, "Invalid user id", http.StatusBadRequest)
@@ -104,4 +111,27 @@ func (s *Service) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "updated"})
+}
+
+func (s *Service) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	id, err := getID(r)
+	if err != nil {
+		log.Printf("Invalid user id: %v", err)
+		http.Error(w, "Invalid user id", http.StatusBadRequest)
+		return
+	}
+
+	rowAffected, err := s.DeleteUserFromDB(id)
+	if err != nil {
+		log.Printf("Error deleting user: %v", err)
+		http.Error(w, "Failed to delete user", http.StatusInternalServerError)
+		return
+	}
+	if rowAffected == 0 {
+		log.Printf("User not found")
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
 }

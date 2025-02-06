@@ -30,6 +30,7 @@ func main() {
 		r.Post("/", userService.CreateUser)
 		r.Get("/{id}", userService.GetUser)
 		r.Patch("/{id}", userService.UpdateUser)
+		r.Delete("/{id}", userService.DeleteUser)
 	})
 
 	http.ListenAndServe(":8080", r)

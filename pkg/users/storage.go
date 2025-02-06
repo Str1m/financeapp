@@ -52,3 +52,16 @@ func (s *Service) UpdateUserField(id int, updates map[string]interface{}) error 
 	return nil
 
 }
+
+func (s *Service) DeleteUserFromDB(id int) (int64, error) {
+	query := `DELETE FROM users WHERE id=$1`
+	result, err := s.DB.Exec(query, id)
+	if err != nil {
+		return 0, err
+	}
+	rowAffected, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return rowAffected, nil
+}
