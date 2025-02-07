@@ -2,15 +2,18 @@ package users
 
 import (
 	"financeapp/internal/db"
+	"github.com/go-playground/validator/v10"
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
+var validate = validator.New()
+
 type User struct {
 	ID        int       `json:"id"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
+	Email     string    `json:"email" validate:"required,email"`
+	Password  string    `json:"password" validate:"required,min=6"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
